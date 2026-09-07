@@ -1,4 +1,4 @@
-var API_BASE = '/api';
+var API_BASE = 'https://ai-resume-builder-backend-i337.onrender.com/api';
 
 const API = {
 
