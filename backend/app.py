@@ -22,9 +22,10 @@ def create_app():
     app,
     supports_credentials=True,
     origins=[
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "https://ai-resume-builder-backend-i337.onrender.com"
+    	"http://localhost:5500",
+    	"http://127.0.0.1:5500",
+    	"https://ai-resume-builder-backend-i337.onrender.com",
+    	"https://ai-resume-builder-frontend-sarl.onrender.com"
     ]
 )
 
