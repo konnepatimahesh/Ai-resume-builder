@@ -11,7 +11,18 @@ def send_verification_email(user):
     db.session.add(record)
     db.session.commit()
 
-    verify_url = f"http://localhost:5500/verify.html?token={token_str}"
+    from flask import request
+    from urllib.parse import urlparse
+    
+    # Check Request context for Origin header or referer to construct base URL dynamically
+    origin = "http://localhost:5000"
+    if request:
+        req_origin = request.headers.get("Origin") or request.referrer
+        if req_origin:
+            parsed = urlparse(req_origin)
+            origin = f"{parsed.scheme}://{parsed.netloc}"
+            
+    verify_url = f"{origin}/verify.html?token={token_str}"
 
     msg = Message(
         subject="Verify your ResumeAI account",

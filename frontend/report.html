@@ -234,7 +234,7 @@
   const history_id = sessionStorage.getItem('history_id');
   const job_title  = sessionStorage.getItem('job_title') || 'Job Position';
 
-  if (!filename || !job_desc) {
+  if (!filename && !history_id) {
     showError('No resume data found. Please upload your resume first.');
     return;
   }
@@ -242,27 +242,74 @@
   document.getElementById('reportTitle').textContent   = `ATS Report — ${job_title}`;
   document.getElementById('reportSubtitle').textContent = `Analyzing against: ${job_title}`;
 
-  // Call ATS API
-  const res = await fetch('/api/ats', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename, job_desc, history_id: parseInt(history_id) })
-  });
+  let data = null;
+  if (history_id) {
+    try {
+      const res = await fetch(`/api/history/${history_id}`, { credentials: 'include' });
+      if (res.ok) {
+        const histData = await res.json();
+        if (histData.history && histData.history.ats_score != null) {
+          data = histData.history;
+        }
+      }
+    } catch (e) {
+      console.log('Failed to fetch history:', e);
+    }
+  }
 
-  const data = await res.json();
+  if (!data) {
+    if (!filename || !job_desc) {
+      showError('Required resume details missing to run new analysis.');
+      return;
+    }
+    // Call ATS API
+    const res = await fetch('/api/ats', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename, job_desc, history_id: parseInt(history_id) })
+    });
 
-  if (!res.ok || data.error) {
-    showError(data.error || 'Analysis failed.');
-    return;
+    data = await res.json();
+
+    if (!res.ok || data.error) {
+      showError(data.error || 'Analysis failed.');
+      return;
+    }
   }
 
   renderReport(data);
+
+  // Sync historical data back to sessionStorage for downstream pages
+  if (data.job_desc) sessionStorage.setItem('job_desc', data.job_desc);
+  if (data.job_title) sessionStorage.setItem('job_title', data.job_title);
+  if (data.uploaded_file_path) sessionStorage.setItem('filename', data.uploaded_file_path);
 
   // Save full ATS data for optimizer/email features
   sessionStorage.setItem('missing_skills', JSON.stringify(data.missing_skills || []));
   sessionStorage.setItem('matched_skills', JSON.stringify(data.matched_skills || []));
   sessionStorage.setItem('ats_score', data.ats_score || 0);
+
+  // Pre-parse the original resume text so the optimizer has it
+  const activeFilename = data.uploaded_file_path || filename;
+  if (activeFilename && !sessionStorage.getItem('original_text')) {
+    try {
+      const parseRes = await fetch('/api/parse', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: activeFilename })
+      });
+      if (parseRes.ok) {
+        const parseData = await parseRes.json();
+        if (parseData.parsed && parseData.parsed.raw_text) {
+          sessionStorage.setItem('original_text', parseData.parsed.raw_text);
+        }
+      }
+    } catch (e) {
+      console.log('Failed to parse original resume:', e);
+    }
+  }
 })();
 
 function goToOptimizer() {

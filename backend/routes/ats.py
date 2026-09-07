@@ -29,11 +29,18 @@ def ats():
     except Exception as e:
         return jsonify({"error": f"Analysis failed: {str(e)}"}), 500
 
-    # Save score to history
+    # Save score and details to history
     if history_id:
+        import json
         h = ResumeHistory.query.filter_by(id=history_id, user_id=current_user.id).first()
         if h:
             h.ats_score = result["ats_score"]
+            h.keyword_score = result["keyword_score"]
+            h.skill_score = result["skill_score"]
+            h.structure_score = result["structure_score"]
+            h.matched_skills = json.dumps(result["matched_skills"])
+            h.missing_skills = json.dumps(result["missing_skills"])
+            h.recommendations = json.dumps(result["recommendations"])
             db.session.commit()
 
     return jsonify(result), 200

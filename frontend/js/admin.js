@@ -72,8 +72,8 @@ async function openResumeModal(userId, userName) {
 
   document.getElementById('resumeBody').innerHTML = list.map(r => {
     const score = r.ats_score != null ? r.ats_score.toFixed(0) + '%' : '—';
-    const pdf  = r.pdf_path  ? `<a href="http://localhost:5000/outputs/${r.pdf_path}"  target="_blank" class="btn btn-ghost btn-sm">PDF</a>`  : '';
-    const docx = r.docx_path ? `<a href="http://localhost:5000/outputs/${r.docx_path}" target="_blank" class="btn btn-ghost btn-sm">DOCX</a>` : '';
+    const pdf  = r.pdf_path  ? `<a href="/outputs/${r.pdf_path}"  target="_blank" class="btn btn-ghost btn-sm">PDF</a>`  : '';
+    const docx = r.docx_path ? `<a href="/outputs/${r.docx_path}" target="_blank" class="btn btn-ghost btn-sm">DOCX</a>` : '';
     return `<tr>
       <td>${r.job_title || 'Untitled'}</td>
       <td><span class="badge" style="background:${scoreColor(parseFloat(r.ats_score)||0)};color:#fff">${score}</span></td>

@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import current_user
 from utils.decorators import login_required_api
 from services.resume_parser import parse_resume
@@ -25,6 +25,18 @@ def optimize():
     if not os.path.exists(filepath):
         return jsonify({"error": "Original file not found."}), 404
 
+    if history_id:
+        h = ResumeHistory.query.filter_by(id=history_id, user_id=current_user.id).first()
+        if h and h.optimised_file_path:
+            opt_path = os.path.join(current_app.config["OUTPUT_FOLDER"], h.optimised_file_path)
+            if os.path.exists(opt_path):
+                try:
+                    with open(opt_path, "r", encoding="utf-8") as f:
+                        optimized_text = f.read()
+                    return jsonify({"optimized_resume": optimized_text}), 200
+                except Exception as e:
+                    print(f"[CACHE READ ERROR] {e}")
+
     try:
         parsed = parse_resume(filepath)
         optimized_text = optimize_resume(parsed["raw_text"], job_desc, missing)
@@ -34,7 +46,15 @@ def optimize():
     if history_id:
         h = ResumeHistory.query.filter_by(id=history_id, user_id=current_user.id).first()
         if h:
-            h.optimised_file_path = optimized_text[:50000]
-            db.session.commit()
+            import uuid
+            opt_filename = f"resume_opt_{uuid.uuid4().hex}.txt"
+            opt_path = os.path.join(current_app.config["OUTPUT_FOLDER"], opt_filename)
+            try:
+                with open(opt_path, "w", encoding="utf-8") as f:
+                    f.write(optimized_text)
+                h.optimised_file_path = opt_filename
+                db.session.commit()
+            except Exception as e:
+                print(f"[CACHE WRITE ERROR] {e}")
 
     return jsonify({"optimized_resume": optimized_text}), 200

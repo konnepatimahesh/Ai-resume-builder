@@ -29,11 +29,13 @@
       : '<span class="text-muted">—</span>';
 
     const pdfLink  = h.pdf_path
-      ? `<a href="http://localhost:5000/outputs/${h.pdf_path}" target="_blank" class="btn btn-ghost btn-sm">PDF</a>`
+      ? `<a href="/outputs/${h.pdf_path}" target="_blank" class="btn btn-ghost btn-sm">PDF</a>`
       : '';
     const docxLink = h.docx_path
-      ? `<a href="http://localhost:5000/outputs/${h.docx_path}" target="_blank" class="btn btn-ghost btn-sm">DOCX</a>`
+      ? `<a href="/outputs/${h.docx_path}" target="_blank" class="btn btn-ghost btn-sm">DOCX</a>`
       : '';
+
+    const viewBtn = `<button class="btn btn-primary btn-sm" onclick="viewSession(${h.id}, '${h.uploaded_file_path.replace(/'/g, "\\'")}', '${(h.job_title || '').replace(/'/g, "\\'")}')">📊 View Report</button>`;
 
     return `
       <tr>
@@ -41,7 +43,22 @@
         <td><strong>${h.job_title || 'Untitled'}</strong></td>
         <td>${scoreBadge}</td>
         <td>${formatDateTime(h.created_at)}</td>
-        <td class="d-flex gap-1">${pdfLink}${docxLink || '<span class="text-muted text-sm">Not yet generated</span>'}</td>
+        <td>
+          <div class="d-flex align-center gap-1">
+            ${viewBtn}
+            ${pdfLink}
+            ${docxLink}
+          </div>
+        </td>
       </tr>`;
   }).join('');
 })();
+
+function viewSession(id, filename, jobTitle) {
+  sessionStorage.clear();
+  sessionStorage.setItem('history_id', id);
+  sessionStorage.setItem('filename', filename);
+  sessionStorage.setItem('job_title', jobTitle);
+  sessionStorage.setItem('job_desc', 'HISTORICAL');
+  window.location.href = 'report.html';
+}

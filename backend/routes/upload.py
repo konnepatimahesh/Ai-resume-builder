@@ -25,6 +25,7 @@ def upload():
     history = ResumeHistory(
         user_id=current_user.id,
         job_title=job_title or "Untitled",
+        job_desc=job_desc,
         uploaded_file_path=filename,
     )
     db.session.add(history)

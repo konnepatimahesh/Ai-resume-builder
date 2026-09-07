@@ -16,7 +16,14 @@ class ResumeHistory(db.Model):
     id                  = db.Column(db.Integer, primary_key=True)
     user_id             = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     job_title           = db.Column(db.String(200))
+    job_desc            = db.Column(db.Text)
     ats_score           = db.Column(db.Float)
+    keyword_score       = db.Column(db.Float)
+    skill_score         = db.Column(db.Float)
+    structure_score     = db.Column(db.Float)
+    matched_skills      = db.Column(db.Text) # Stored as JSON string
+    missing_skills      = db.Column(db.Text) # Stored as JSON string
+    recommendations     = db.Column(db.Text) # Stored as JSON string
     uploaded_file_path  = db.Column(db.String(400))
     optimised_file_path = db.Column(db.String(400))
     pdf_path            = db.Column(db.String(400))
@@ -24,10 +31,18 @@ class ResumeHistory(db.Model):
     created_at          = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
+        import json
         return {
             "id":                  self.id,
             "job_title":           self.job_title,
+            "job_desc":            self.job_desc,
             "ats_score":           self.ats_score,
+            "keyword_score":       self.keyword_score,
+            "skill_score":         self.skill_score,
+            "structure_score":     self.structure_score,
+            "matched_skills":      json.loads(self.matched_skills) if self.matched_skills else [],
+            "missing_skills":      json.loads(self.missing_skills) if self.missing_skills else [],
+            "recommendations":     json.loads(self.recommendations) if self.recommendations else [],
             "uploaded_file_path":  self.uploaded_file_path,
             "optimised_file_path": self.optimised_file_path,
             "pdf_path":            self.pdf_path,
