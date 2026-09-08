@@ -1,6 +1,6 @@
 var API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://127.0.0.1:5000/api'
-  : 'https://ai-resume-builder-backend-i337.onrender.com/api';
+  : 'https://ai-resume-builder-1-o599.onrender.com/api';
 
 const API = {
  
