@@ -20,12 +20,15 @@ class Config:
     # Database
     # ---------------------------------------------------------
 
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        "sqlite:///resume_builder.db"
-    )
+    db_url = os.getenv("DATABASE_URL", "sqlite:///resume_builder.db")
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
 
+    SQLALCHEMY_DATABASE_URI = db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Lax" if os.getenv("FLASK_DEBUG", "True").lower() == "true" else "None")
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False" if os.getenv("FLASK_DEBUG", "True").lower() == "true" else "True").lower() == "true"
 
 
     # ---------------------------------------------------------

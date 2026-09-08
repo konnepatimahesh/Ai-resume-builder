@@ -1,4 +1,4 @@
-var API_BASE = '/api';
+// API_BASE is declared in api.js
 
 // ── Toast notifications ──────────────────────────────────────────────
 function showToast(message, type = 'default', duration = 3500) {

@@ -245,7 +245,7 @@
   let data = null;
   if (history_id) {
     try {
-      const res = await fetch(`/api/history/${history_id}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/history/${history_id}`, { credentials: 'include' });
       if (res.ok) {
         const histData = await res.json();
         if (histData.history && histData.history.ats_score != null) {
@@ -263,7 +263,7 @@
       return;
     }
     // Call ATS API
-    const res = await fetch('/api/ats', {
+    const res = await fetch(`${API_BASE}/ats`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -294,7 +294,7 @@
   const activeFilename = data.uploaded_file_path || filename;
   if (activeFilename && !sessionStorage.getItem('original_text')) {
     try {
-      const parseRes = await fetch('/api/parse', {
+      const parseRes = await fetch(`${API_BASE}/parse`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

@@ -1,7 +1,9 @@
-var API_BASE = 'https://ai-resume-builder-backend-i337.onrender.com/api';
+var API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://127.0.0.1:5000/api'
+  : 'https://ai-resume-builder-backend-i337.onrender.com/api';
 
 const API = {
-
+ 
   async _request(path, options = {}) {
     try {
       const res = await fetch(`${API_BASE}${path}`, {

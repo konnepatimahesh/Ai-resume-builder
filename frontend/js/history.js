@@ -29,10 +29,10 @@
       : '<span class="text-muted">—</span>';
 
     const pdfLink  = h.pdf_path
-      ? `<a href="/outputs/${h.pdf_path}" target="_blank" class="btn btn-ghost btn-sm">PDF</a>`
+      ? `<a href="${API_BASE.replace('/api', '')}/outputs/${h.pdf_path}" target="_blank" class="btn btn-ghost btn-sm">PDF</a>`
       : '';
     const docxLink = h.docx_path
-      ? `<a href="/outputs/${h.docx_path}" target="_blank" class="btn btn-ghost btn-sm">DOCX</a>`
+      ? `<a href="${API_BASE.replace('/api', '')}/outputs/${h.docx_path}" target="_blank" class="btn btn-ghost btn-sm">DOCX</a>`
       : '';
 
     const viewBtn = `<button class="btn btn-primary btn-sm" onclick="viewSession(${h.id}, '${h.uploaded_file_path.replace(/'/g, "\\'")}', '${(h.job_title || '').replace(/'/g, "\\'")}')">📊 View Report</button>`;

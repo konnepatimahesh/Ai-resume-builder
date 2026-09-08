@@ -1,4 +1,4 @@
-﻿
+
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_login import current_user
 from utils.decorators import login_required_api
@@ -95,5 +95,6 @@ def email_resume():
 
 
 @download_bp.route("/outputs/<filename>", methods=["GET"])
+@login_required_api
 def download_output(filename):
     return send_from_directory(current_app.config["OUTPUT_FOLDER"], filename, as_attachment=True)

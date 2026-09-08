@@ -19,15 +19,19 @@ def create_app():
     login_manager.login_view = "auth.login"
 
     CORS(
-    app,
-    supports_credentials=True,
-    origins=[
-    	"http://localhost:5500",
-    	"http://127.0.0.1:5500",
-    	"https://ai-resume-builder-backend-i337.onrender.com",
-    	"https://ai-resume-builder-frontend-sarl.onrender.com"
-    ]
-)
+        app,
+        supports_credentials=True,
+        origins=[
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000",
+            "https://ai-resume-builder-backend-i337.onrender.com",
+            "https://ai-resume-builder-frontend-sarl.onrender.com"
+        ]
+    )
 
     from routes.auth import auth_bp
     from routes.upload import upload_bp
