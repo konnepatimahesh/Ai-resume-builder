@@ -8,36 +8,269 @@
   <link rel="stylesheet" href="css/dashboard.css"/>
   <style>
     .optimizer-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1.5rem; align-items: start;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
     }
-    .panel {
-      background: var(--white); border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg); padding: 1.5rem;
-      max-height: 70vh; overflow-y: auto;
-    }
-    .panel h3 { margin-bottom: 1rem; display:flex; align-items:center; justify-content: space-between; }
-    .panel pre {
-      white-space: pre-wrap; font-family: var(--font-body);
-      font-size: .9rem; line-height: 1.7; color: var(--gray-700);
-    }
-    .panel.optimized { border-color: var(--primary); background: var(--primary-light); }
-    .panel.optimized pre { color: var(--gray-800); }
 
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      max-height: 74vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: .85rem 1.25rem;
+      border-bottom: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-header h3 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .panel-body {
+      padding: 1.25rem 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* ── Original panel: monospace text ── */
+    .panel.original .panel-body pre {
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: .82rem;
+      line-height: 1.65;
+      color: var(--gray-600);
+    }
+
+    /* ── Optimized panel: styled resume ── */
+    .panel.optimized {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px #4f46e520, 0 4px 24px #4f46e510;
+    }
+
+    .panel.optimized .panel-header {
+      background: linear-gradient(135deg, #4f46e508 0%, #7c3aed08 100%);
+      border-bottom-color: #4f46e530;
+    }
+
+    .panel.optimized .panel-header h3 {
+      color: #4f46e5;
+    }
+
+    /* ── Resume preview styles ── */
+    .resume-preview {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: .88rem;
+      line-height: 1.6;
+      color: #1a1a1a;
+    }
+
+    .resume-preview .r-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      color: #1f4e79;
+      letter-spacing: .02em;
+      margin-bottom: .25rem;
+    }
+
+    .resume-preview .r-contact {
+      text-align: center;
+      font-size: .78rem;
+      color: #555;
+      margin-bottom: .1rem;
+    }
+
+    .resume-preview .r-contact a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    .resume-preview .r-rule {
+      border: none;
+      border-top: 1.5px solid #c7d8ed;
+      margin: .6rem 0;
+    }
+
+    .resume-preview .r-section {
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #1f4e79;
+      margin: 1rem 0 .2rem;
+      padding-bottom: .2rem;
+      border-bottom: 1.5px solid #1f4e79;
+    }
+
+    .resume-preview .r-two-col {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin: .3rem 0 .1rem;
+    }
+
+    .resume-preview .r-two-col .r-left {
+      font-weight: 700;
+      font-size: .88rem;
+      color: #1a1a1a;
+      flex: 1;
+    }
+
+    .resume-preview .r-two-col .r-right {
+      font-size: .78rem;
+      color: #777;
+      white-space: nowrap;
+      font-style: italic;
+    }
+
+    .resume-preview .r-pipe-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: .2rem 0;
+    }
+
+    .resume-preview .r-pipe-line .r-company {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .resume-preview .r-pipe-line .r-role {
+      color: #555;
+      font-style: italic;
+      font-size: .84rem;
+    }
+
+    .resume-preview .r-bullet {
+      display: flex;
+      gap: .5rem;
+      margin: .2rem 0 .2rem .5rem;
+      font-size: .84rem;
+      line-height: 1.5;
+    }
+
+    .resume-preview .r-bullet-dot {
+      color: #4f46e5;
+      flex-shrink: 0;
+      font-size: .9rem;
+      margin-top: .05rem;
+    }
+
+    .resume-preview .r-body {
+      font-size: .84rem;
+      color: #333;
+      margin: .15rem 0;
+    }
+
+    /* ── Loading ── */
     .loading-box {
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding: 4rem 1rem; text-align:center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 1rem;
+      text-align: center;
     }
-    .spinner {
-      width:42px; height:42px; border-radius:50%;
-      border:4px solid var(--gray-200); border-top-color: var(--primary);
-      animation: spin 1s linear infinite; margin-bottom:1rem;
+
+    .spinner-ring {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 4px solid var(--gray-200);
+      border-top-color: #4f46e5;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.25rem;
     }
+
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .export-bar { display:flex; gap:.75rem; margin-top:1.5rem; flex-wrap:wrap; }
+    .progress-steps {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      margin-top: .75rem;
+      text-align: left;
+    }
 
-    @media (max-width: 900px) { .optimizer-grid { grid-template-columns: 1fr; } }
+    .progress-step {
+      font-size: .82rem;
+      color: var(--gray-500);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .4s, transform .4s;
+    }
+
+    .progress-step.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .step-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gray-300);
+      flex-shrink: 0;
+    }
+
+    .progress-step.visible .step-dot {
+      background: #4f46e5;
+    }
+
+    /* ── Export bar ── */
+    .export-bar {
+      display: flex;
+      gap: .75rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+    }
+
+    .export-bar .export-label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-right: .25rem;
+    }
+
+    .badge-improved {
+      background: #d1fae5;
+      color: #065f46;
+      font-size: .72rem;
+      font-weight: 600;
+      padding: .2rem .6rem;
+      border-radius: 20px;
+      margin-left: .5rem;
+    }
+
+    @media (max-width: 900px) {
+      .optimizer-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -56,39 +289,66 @@
 </nav>
 
 <div class="container section">
+
   <div class="dashboard-header">
-    <h2>AI Resume Optimizer</h2>
-    <p class="text-muted">Claude rewrites your resume to better match the job description.</p>
+    <div>
+      <h2>✨ AI Resume Optimizer</h2>
+      <p class="text-muted">Groq AI rewrites your resume to perfectly match the job description and beat ATS filters.</p>
+    </div>
   </div>
 
   <!-- LOADING -->
   <div class="loading-box" id="loadingBox">
-    <div class="spinner"></div>
+    <div class="spinner-ring"></div>
     <h3>Optimizing your resume…</h3>
-    <p class="text-muted mt-1">This may take 10-20 seconds.</p>
+    <p class="text-muted mt-1" style="max-width:340px">Our AI is tailoring your resume to match the job description. This takes 15–30 seconds.</p>
+    <div class="progress-steps" id="progressSteps">
+      <div class="progress-step" id="step1"><div class="step-dot"></div>Parsing your resume…</div>
+      <div class="progress-step" id="step2"><div class="step-dot"></div>Matching keywords to job description…</div>
+      <div class="progress-step" id="step3"><div class="step-dot"></div>Rewriting with strong action verbs…</div>
+      <div class="progress-step" id="step4"><div class="step-dot"></div>Formatting for ATS compatibility…</div>
+    </div>
   </div>
 
   <!-- CONTENT -->
   <div id="content" class="hidden">
     <div class="optimizer-grid">
-      <div class="panel">
-        <h3>Original Resume</h3>
-        <pre id="originalText"></pre>
+
+      <!-- Original -->
+      <div class="panel original">
+        <div class="panel-header">
+          <h3>📄 Original Resume</h3>
+        </div>
+        <div class="panel-body">
+          <pre id="originalText"></pre>
+        </div>
       </div>
+
+      <!-- Optimized -->
       <div class="panel optimized">
-        <h3>✨ Optimized Resume</h3>
-        <pre id="optimizedText"></pre>
+        <div class="panel-header">
+          <h3>✨ AI-Optimized Resume <span class="badge-improved">ATS Ready</span></h3>
+        </div>
+        <div class="panel-body">
+          <div class="resume-preview" id="resumePreview"></div>
+        </div>
       </div>
+
     </div>
 
+    <!-- Export bar -->
     <div class="export-bar">
-      <button class="btn btn-primary" onclick="downloadFile('pdf')" id="pdfBtn">📄 Download PDF</button>
-      <button class="btn btn-outline" onclick="downloadFile('docx')" id="docxBtn">📝 Download DOCX</button>
-      <button class="btn btn-outline" onclick="emailResume()" id="emailBtn">📧 Email Me This Resume</button>
-      <a href="chatbot.html" class="btn btn-ghost">💬 Discuss with AI Coach</a>
+      <span class="export-label">Download as:</span>
+      <button class="btn btn-primary" onclick="downloadFile('pdf')" id="pdfBtn">📄 PDF</button>
+      <button class="btn btn-outline" onclick="downloadFile('docx')" id="docxBtn">📝 Word (DOCX)</button>
+      <button class="btn btn-outline" onclick="emailResume()" id="emailBtn">📧 Email to Me</button>
+      <div style="margin-left:auto">
+        <a href="chatbot.html" class="btn btn-ghost">💬 Discuss with AI Coach</a>
+      </div>
     </div>
   </div>
 
+  <!-- Error -->
   <div id="errorBox" class="hidden text-center" style="padding:4rem 0">
     <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
     <h3>Optimization Failed</h3>
@@ -102,14 +362,25 @@
 <script src="js/api.js"></script>
 <script>
 let optimizedResumeText = '';
-let currentHistoryId = null;
+let currentHistoryId    = null;
 
+// ── Animate loading steps ────────────────────────────────────────────────────
+const steps = ['step1','step2','step3','step4'];
+let stepIdx = 0;
+const stepTimer = setInterval(() => {
+  if (stepIdx < steps.length) {
+    document.getElementById(steps[stepIdx]).classList.add('visible');
+    stepIdx++;
+  }
+}, 4000);
+
+// ── Main ─────────────────────────────────────────────────────────────────────
 (async () => {
   const user = await guardAuth();
   if (!user) return;
   initNavbar(user);
 
-  const filename   = sessionStorage.getItem('filename');
+  const filename    = sessionStorage.getItem('filename');
   const job_desc    = sessionStorage.getItem('job_desc');
   const history_id  = sessionStorage.getItem('history_id');
   const missingJSON = sessionStorage.getItem('missing_skills');
@@ -124,7 +395,7 @@ let currentHistoryId = null;
   try { missing_skills = JSON.parse(missingJSON || '[]'); } catch {}
 
   try {
-    const res = await fetch('/api/optimize', {
+    const res  = await fetch(`${API_BASE}/optimize`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -132,25 +403,127 @@ let currentHistoryId = null;
     });
     const data = await res.json();
 
+    clearInterval(stepTimer);
+    steps.forEach(id => document.getElementById(id).classList.add('visible'));
+
     if (!res.ok || data.error) {
       showError(data.error || 'Optimization failed.');
       return;
     }
 
     optimizedResumeText = data.optimized_resume;
-    document.getElementById('optimizedText').textContent = optimizedResumeText;
 
-    // Show original (fetch raw text quickly via parse endpoint, or just show JD-driven note)
-    document.getElementById('originalText').textContent = sessionStorage.getItem('original_text') || '(Original text not cached — see optimized version)';
+    // Show original
+    document.getElementById('originalText').textContent =
+      sessionStorage.getItem('original_text') || '(Original text unavailable)';
+
+    // Render beautiful preview
+    document.getElementById('resumePreview').innerHTML = renderResumeHTML(optimizedResumeText);
 
     document.getElementById('loadingBox').classList.add('hidden');
     document.getElementById('content').classList.remove('hidden');
 
   } catch (err) {
-    showError('Connection error. Make sure the server is running.');
+    clearInterval(stepTimer);
+    showError('Connection error. Please check your connection and try again.');
   }
 })();
 
+// ── Resume HTML renderer ─────────────────────────────────────────────────────
+function renderResumeHTML(text) {
+  // Clean AI artefacts
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  text = text.replace(/\*{1,3}/g, '');
+  text = text.replace(/^#{1,6}\s*/gm, '');
+  // Normalize bullets
+  text = text.replace(/^[\-\*]\s+/gm, '• ');
+
+  const lines = text.split('\n');
+  let html = '';
+  let nameDone    = false;
+  let contactDone = false;
+
+  const DATE_RE = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}\s*[–\-—]\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec[a-z]*\.?\s+\d{4}|Present|Current|Now|\d{4})/i;
+
+  for (const raw of lines) {
+    const s = raw.trim();
+
+    if (!s) continue;
+
+    // Divider ---
+    if (/^-{2,}$/.test(s)) {
+      if (!contactDone) contactDone = true;
+      html += `<hr class="r-rule">`;
+      continue;
+    }
+
+    // Name
+    if (!nameDone) {
+      nameDone = true;
+      html += `<div class="r-name">${esc(s)}</div>`;
+      continue;
+    }
+
+    // Contact (before first ---)
+    if (!contactDone) {
+      // Make links clickable
+      let parts = s.split('|').map(p => p.trim());
+      let rendered = parts.map(p => {
+        if (/github\.com/i.test(p)) return `<a href="https://${p.replace(/^https?:\/\//i,'')}" target="_blank">${esc(p)}</a>`;
+        if (/linkedin\.com/i.test(p)) return `<a href="https://${p.replace(/^https?:\/\//i,'')}" target="_blank">${esc(p)}</a>`;
+        if (/@/.test(p)) return `<a href="mailto:${esc(p)}">${esc(p)}</a>`;
+        return esc(p);
+      }).join(' &nbsp;|&nbsp; ');
+      html += `<div class="r-contact">${rendered}</div>`;
+      continue;
+    }
+
+    // Section header: ALL CAPS short line
+    if (s === s.toUpperCase() && s.length >= 2 && s.length <= 50
+        && /[A-Z]/.test(s) && !/\d{4}/.test(s)) {
+      html += `<div class="r-section">${esc(s)}</div>`;
+      continue;
+    }
+
+    // Bullet
+    if (/^[•\-\*]/.test(s) && s.length > 2) {
+      const bt = s.replace(/^[•\-\*]\s*/, '');
+      html += `<div class="r-bullet"><span class="r-bullet-dot">•</span><span>${esc(bt)}</span></div>`;
+      continue;
+    }
+
+    // Two-column date line
+    const dm = DATE_RE.exec(s);
+    if (dm) {
+      const dateStr = dm[0].trim();
+      const leftStr = s.slice(0, dm.index).trim().replace(/[|–\-]+$/, '').trim();
+      html += `<div class="r-two-col"><span class="r-left">${esc(leftStr)}</span><span class="r-right">${esc(dateStr)}</span></div>`;
+      continue;
+    }
+
+    // Pipe-separated line
+    if (s.includes('|') && s.length < 100) {
+      const parts = s.split('|').map(p => p.trim());
+      html += `<div class="r-pipe-line"><span class="r-company">${esc(parts[0])}</span>${parts[1] ? `<span class="r-role">${esc(parts[1])}</span>` : ''}</div>`;
+      continue;
+    }
+
+    // Body
+    html += `<div class="r-body">${esc(s)}</div>`;
+  }
+
+  return html;
+}
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Download ─────────────────────────────────────────────────────────────────
 async function downloadFile(type) {
   const btn = type === 'pdf' ? document.getElementById('pdfBtn') : document.getElementById('docxBtn');
   btn.disabled = true;
@@ -158,7 +531,7 @@ async function downloadFile(type) {
   btn.textContent = 'Generating…';
 
   try {
-    const res = await fetch('/api/export', {
+    const res = await fetch(`${API_BASE}/export`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -173,8 +546,11 @@ async function downloadFile(type) {
     if (!res.ok || data.error) {
       showToast(data.error || 'Export failed.', 'error');
     } else {
-      showToast(`${type.toUpperCase()} generated! Downloading…`, 'success');
-      window.location.href = data.url;
+      showToast(`${type.toUpperCase()} ready! Downloading…`, 'success');
+      const downloadUrl = data.url.startsWith('/')
+        ? `${API_BASE.replace('/api', '')}${data.url}`
+        : data.url;
+      window.location.href = downloadUrl;
     }
   } catch {
     showToast('Export failed. Check connection.', 'error');
@@ -184,33 +560,28 @@ async function downloadFile(type) {
   btn.textContent = original;
 }
 
+// ── Email ─────────────────────────────────────────────────────────────────────
 async function emailResume() {
   const btn = document.getElementById('emailBtn');
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Sending…';
 
-  const jobTitle      = sessionStorage.getItem('job_title') || 'Job Position';
-  const atsScore      = parseFloat(sessionStorage.getItem('ats_score') || '0');
-  const matchedSkills = JSON.parse(sessionStorage.getItem('matched_skills') || '[]');
-  const missingSkills = JSON.parse(sessionStorage.getItem('missing_skills') || '[]');
-
   try {
-    const res = await fetch('/api/email-resume', {
+    const res = await fetch(`${API_BASE}/email-resume`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         optimized_resume: optimizedResumeText,
         history_id: parseInt(currentHistoryId),
-        job_title: jobTitle,
-        ats_score: atsScore,
-        matched_skills: matchedSkills,
-        missing_skills: missingSkills,
+        job_title:      sessionStorage.getItem('job_title') || 'Job Position',
+        ats_score:      parseFloat(sessionStorage.getItem('ats_score') || '0'),
+        matched_skills: JSON.parse(sessionStorage.getItem('matched_skills') || '[]'),
+        missing_skills: JSON.parse(sessionStorage.getItem('missing_skills') || '[]'),
       })
     });
     const data = await res.json();
-
     if (!res.ok || data.error) {
       showToast(data.error || 'Could not send email.', 'error');
     } else {
@@ -225,6 +596,7 @@ async function emailResume() {
 }
 
 function showError(msg) {
+  clearInterval(stepTimer);
   document.getElementById('loadingBox').classList.add('hidden');
   document.getElementById('errorBox').classList.remove('hidden');
   document.getElementById('errorMsg').textContent = msg;
