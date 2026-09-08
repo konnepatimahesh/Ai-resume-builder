@@ -28,7 +28,8 @@ class ResumeHistory(db.Model):
     optimised_file_path = db.Column(db.String(400))
     pdf_path            = db.Column(db.String(400))
     docx_path           = db.Column(db.String(400))
-    created_at          = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
 
     def to_dict(self):
         import json
