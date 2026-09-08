@@ -1,3 +1,4 @@
+from datetime import datetime
 
 from database import db
 from models.user import User
@@ -17,6 +18,7 @@ def register_user(name, email, password):
         name=name.strip(),
         email=email
     )
+
     user.set_password(password)
 
     db.session.add(user)
@@ -25,6 +27,7 @@ def register_user(name, email, password):
     # Send verification email
     try:
         send_verification_email(user)
+
     except Exception as e:
         print(f"[EMAIL ERROR] {e}")
 
@@ -38,9 +41,18 @@ def register_user(name, email, password):
 
 
 def verify_token(token_str):
-    record = EmailToken.query.filter_by(token=token_str).first()
+    record = EmailToken.query.filter_by(
+        token=token_str
+    ).first()
 
     if not record:
+        return None, "Invalid or expired link."
+
+    # Check token expiration
+    if record.expires_at < datetime.utcnow():
+        db.session.delete(record)
+        db.session.commit()
+
         return None, "Invalid or expired link."
 
     user = User.query.get(record.user_id)
@@ -48,8 +60,10 @@ def verify_token(token_str):
     if not user:
         return None, "User not found."
 
+    # Verify user
     user.is_verified = True
 
+    # Delete used token
     db.session.delete(record)
     db.session.commit()
 
@@ -59,7 +73,9 @@ def verify_token(token_str):
 def authenticate(email, password):
     email = email.lower().strip()
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(
+        email=email
+    ).first()
 
     if not user or not user.check_password(password):
         return None, "Invalid email or password."
