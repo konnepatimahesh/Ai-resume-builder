@@ -1,8 +1,8 @@
-
 import secrets
+import smtplib
 from urllib.parse import urlparse
 
-from flask import request
+from flask import request, current_app
 from flask_mail import Message
 
 from database import db, mail
@@ -14,10 +14,16 @@ def send_verification_email(user):
     Create an email verification token and send the verification email.
     """
 
+    # ---------------------------------------------------------
     # Generate secure verification token
+    # ---------------------------------------------------------
+
     token_str = secrets.token_urlsafe(32)
 
+    # ---------------------------------------------------------
     # Save token in database
+    # ---------------------------------------------------------
+
     record = EmailToken(
         user_id=user.id,
         token=token_str
@@ -45,14 +51,16 @@ def send_verification_email(user):
     except Exception as e:
         print(f"[URL ERROR] Could not determine frontend URL: {e}")
 
-    # Remove trailing slash if present
     origin = origin.rstrip("/")
 
-    # Verification URL
+    # ---------------------------------------------------------
+    # Create verification URL
+    # ---------------------------------------------------------
+
     verify_url = f"{origin}/verify.html?token={token_str}"
 
     # ---------------------------------------------------------
-    # Create email
+    # Create email message
     # ---------------------------------------------------------
 
     msg = Message(
@@ -123,28 +131,107 @@ def send_verification_email(user):
     )
 
     # ---------------------------------------------------------
+    # Log email information
+    # ---------------------------------------------------------
+
+    print(f"[EMAIL] Preparing verification email for {user.email}")
+    print(f"[EMAIL] Verification URL: {verify_url}")
+
+    # ---------------------------------------------------------
+    # Check SMTP configuration
+    # ---------------------------------------------------------
+
+    mail_server = current_app.config.get("MAIL_SERVER")
+    mail_port = current_app.config.get("MAIL_PORT")
+    mail_username = current_app.config.get("MAIL_USERNAME")
+    mail_password = current_app.config.get("MAIL_PASSWORD")
+    mail_use_tls = current_app.config.get("MAIL_USE_TLS")
+
+    print(f"[EMAIL] SMTP server: {mail_server}")
+    print(f"[EMAIL] SMTP port: {mail_port}")
+    print(f"[EMAIL] TLS enabled: {mail_use_tls}")
+    print(f"[EMAIL] Username configured: {bool(mail_username)}")
+    print(f"[EMAIL] Password configured: {bool(mail_password)}")
+
+    # ---------------------------------------------------------
     # Send email
     # ---------------------------------------------------------
 
-    print(f"[EMAIL] Sending verification email to {user.email}")
-    print(f"[EMAIL] Verification URL: {verify_url}")
-
     try:
-        # Flask-Mail uses the SMTP configuration from Flask config.
-        # The connection timeout is controlled by Python/SMTP.
-        mail.send(msg)
+        print("[EMAIL] Connecting to SMTP server...")
 
-        print(f"[EMAIL] Verification email sent successfully to {user.email}")
+        # Explicit connection timeout.
+        # This prevents Render worker from hanging indefinitely.
+        smtp = smtplib.SMTP(
+            mail_server,
+            mail_port,
+            timeout=15
+        )
+
+        print("[EMAIL] SMTP connection established.")
+
+        # -----------------------------------------------------
+        # Start TLS
+        # -----------------------------------------------------
+
+        if mail_use_tls:
+            print("[EMAIL] Starting TLS...")
+            smtp.starttls()
+            print("[EMAIL] TLS started successfully.")
+
+        # -----------------------------------------------------
+        # Login
+        # -----------------------------------------------------
+
+        print("[EMAIL] Logging into SMTP server...")
+
+        smtp.login(
+            mail_username,
+            mail_password
+        )
+
+        print("[EMAIL] SMTP login successful.")
+
+        # -----------------------------------------------------
+        # Send message
+        # -----------------------------------------------------
+
+        print(f"[EMAIL] Sending verification email to {user.email}")
+
+        smtp.send_message(
+            msg,
+            from_addr=mail_username,
+            to_addrs=[user.email]
+        )
+
+        print(
+            f"[EMAIL] Verification email sent successfully "
+            f"to {user.email}"
+        )
+
+        smtp.quit()
 
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send email: {e}")
 
-        # Remove the token if email could not be sent.
+        print(
+            f"[EMAIL ERROR] Failed to send verification email: {e}"
+        )
+
+        # -----------------------------------------------------
+        # Remove token if email failed
+        # -----------------------------------------------------
+
         try:
             db.session.delete(record)
             db.session.commit()
-        except Exception as db_error:
-            print(f"[TOKEN CLEANUP ERROR] {db_error}")
 
-        # Re-raise so auth_service.py can handle the failure.
+            print("[EMAIL] Verification token removed.")
+
+        except Exception as db_error:
+
+            print(
+                f"[TOKEN CLEANUP ERROR] {db_error}"
+            )
+
+        # Re-raise so auth_service.py can handle it
         raise
