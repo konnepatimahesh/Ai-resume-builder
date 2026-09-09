@@ -3,14 +3,14 @@ import secrets
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 from flask import request
-from flask_mail import Message
-from database import db, mail
+import resend
+from database import db
 from models.resume_history import EmailToken
 
 
 def send_verification_email(user):
     """
-    Create an email verification token and send the verification email using Flask-Mail.
+    Create an email verification token and send the verification email using Resend.
     """
     token_str = secrets.token_urlsafe(32)
 
@@ -25,7 +25,7 @@ def send_verification_email(user):
 
     frontend_url = os.getenv(
         "FRONTEND_URL",
-        "https://ai-resume-builder-frontend-sarl.onrender.com"
+        "https://ai-resume-builder-1-o599.onrender.com"
     ).rstrip("/")
 
     try:
@@ -38,8 +38,6 @@ def send_verification_email(user):
         print(f"[URL ERROR] Could not determine frontend URL: {e}")
 
     verify_url = f"{frontend_url}/verify.html?token={token_str}"
-
-    sender = os.getenv("MAIL_USERNAME") or "konnepatimahesh@gmail.com"
 
     html = f"""
     <div style="
@@ -90,18 +88,22 @@ def send_verification_email(user):
         print(f"[EMAIL] Preparing verification email for {user.email}")
         print(f"[EMAIL] Verification URL: {verify_url}")
 
-        msg = Message(
-            subject="Verify your ResumeAI account",
-            sender=sender,
-            recipients=[user.email],
-            html=html
-        )
+        resend.api_key = os.getenv("RESEND_API_KEY")
+        if not resend.api_key:
+            raise RuntimeError("RESEND_API_KEY is not configured.")
+        params = {
+            "from": "onboarding@resend.dev",
+            "to": [user.email],
+            "subject": "Verify your ResumeAI account",
+            "html": html,
+        }
+        response = resend.Emails.send(params)
 
-        mail.send(msg)
+        print(f"[EMAIL] Resend response: {response}")
         print(f"[EMAIL] Verification email sent successfully to {user.email}")
 
     except Exception as e:
-        print(f"[EMAIL ERROR] Flask-Mail failed: {e}")
+        print(f"[EMAIL ERROR] Resend failed: {e}")
 
         try:
             db.session.delete(record)
@@ -111,4 +113,4 @@ def send_verification_email(user):
             db.session.rollback()
             print(f"[TOKEN CLEANUP ERROR] {db_error}")
 
-        raise
+        raise
