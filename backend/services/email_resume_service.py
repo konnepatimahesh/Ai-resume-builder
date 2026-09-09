@@ -90,7 +90,10 @@ def send_resume_email(
         print(f"[EMAIL] Preparing resume email for {user.email}")
 
         with open(pdf_path, "rb") as f:
-            pdf_data = f.read()
+            pdf_data = base64.b64encode(f.read()).decode("utf-8")
+        print(f"[EMAIL DEBUG] pdf_path type: {type(pdf_path)}")
+        print(f"[EMAIL DEBUG] filename type: {type(os.path.basename(pdf_path))}")
+        print(f"[EMAIL DEBUG] pdf_data type: {type(pdf_data)}")
 
         params = {
             "from": "onboarding@resend.dev",
