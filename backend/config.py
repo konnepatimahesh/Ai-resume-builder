@@ -25,6 +25,11 @@ class Config:
         db_url = db_url.replace("postgres://", "postgresql://", 1)
 
     SQLALCHEMY_DATABASE_URI = db_url
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Lax" if os.getenv("FLASK_DEBUG", "True").lower() == "true" else "None")
